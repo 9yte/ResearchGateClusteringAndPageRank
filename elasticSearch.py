@@ -1,6 +1,7 @@
 from datetime import datetime
 import os
 import json
+import pickle
 from elasticsearch import Elasticsearch
 
 def read_data():
@@ -31,6 +32,8 @@ es = Elasticsearch([{u'host': u'127.0.0.1', u'port': 9200}])
 # }
 #
 # docs = [doc1, doc2]
+
+
 docs = read_data()
 es.indices.create(index="researchgate-data",
                   body={
@@ -53,8 +56,7 @@ es.indices.create(index="researchgate-data",
                              }
                          }
                   })
-
-# print(docs[0])
+#
 index_id = 0
 try:
     for doc in docs:
@@ -62,9 +64,9 @@ try:
         es.index(index="researchgate-data", doc_type="paper", body=doc, id=index_id)
         index_id += 1
 except:
-    # print("error: "+sys.exc_info()[0])
     print("error: ")
     raise
+
 
 index_id = 0
 vectors = []
@@ -79,8 +81,11 @@ for doc in docs:
     vectors.append(vec_clean)
 print(vectors[len(vectors)-1])
 
-with open('dictionaries.txt','w') as file:
-        file.write(vectors.__str__())
+with open('dictionaries_object.object', 'wb') as file:
+    pickle.dump(vectors, file)
+
+# with open('dictionaries.txt','w') as file:
+#     file.write(vectors.__str__())
 
 # es.indices.delete(index="researchgate-data")
 
