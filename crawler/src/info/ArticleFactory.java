@@ -3,6 +3,7 @@ package info;
 import java.util.HashMap;
 import java.util.concurrent.Semaphore;
 
+import progressBar.ProgressBar;
 import crawler.Constant;
 
 public class ArticleFactory {
@@ -16,7 +17,8 @@ public class ArticleFactory {
 			Article a = new Article(abs, title, url, id, articles.size());
 			sm.acquire();
 			articles.put(id, a);
-			System.out.println(articles.size());
+			ProgressBar.getInstance().update(articles.size());
+//			System.out.println(articles.size());
 			sm.release();
 			return a;
 		}

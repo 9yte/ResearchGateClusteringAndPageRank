@@ -5,7 +5,7 @@ public class ThreadPool {
 	private BlockingQueue queue = new BlockingQueue();
 	private boolean closed = true;
 
-	private int poolSize = 30;
+	private int poolSize = Constant.poolThreadSize;
 
 	public void setPoolSize(int poolSize) {
 		this.poolSize = poolSize;

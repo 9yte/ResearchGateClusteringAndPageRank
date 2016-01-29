@@ -1,0 +1,91 @@
+package parser;
+
+import info.Article;
+import info.ArticleFactory;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.*;
+import org.jsoup.select.Elements;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import crawler.Constant;
+import crawler.Scheduler;
+import dictionary.Headers;
+
+public class Parser {
+
+	public static void htmlParser(String text, String url, int id, int mainId,
+			boolean isCitedIn) throws InterruptedException {
+		System.out.println(text);
+		Document d = Jsoup.parse(text);
+		System.out.println(url);
+		Element abs = d.select(".pub-abstract div div").first();
+		System.out.println(url);
+		if(abs == null)
+			abs = d.select(".publication-abstract-text .text-with-line-breaks span").first();
+		System.out.println(url);
+		if (abs.hasClass("js-expander-container")) {
+			abs = abs.select("div").get(1);
+		}
+		System.out.println(url);
+		String abstr = abs.ownText();
+		System.out.println(url);
+		String title = d.select("h1.pub-title, h1.publication-title").first().ownText();
+		System.out.println(url);
+		Elements authors = d.select("span[itemprop=name]");
+		System.out.println(url);
+		Article a = ArticleFactory.createArticle(abstr, title, url, id);
+//		addCitation(mainId, id, isCitedIn);
+		if (a != null) {
+			for (Element author : authors) {
+				a.addAuthor(author.ownText());
+			}
+		}
+		Scheduler.createWork(Constant.getCitedInUrl(id),
+				Headers.JSON_HEADER_CITED_IN, id, id,
+				Headers.isCitedIn(Headers.JSON_HEADER_CITED_IN));
+		Scheduler.createWork(Constant.getReferencesUrl(id),
+				Headers.JSON_HEADER_REFERENCES, id, id,
+				Headers.isCitedIn(Headers.JSON_HEADER_REFERENCES));
+	}
+
+	private static void addCitation(int mainId, int id, boolean isCited, String title) {
+		if (id == mainId)
+			return;
+		if (!isCited) {
+			ArticleFactory.addReference(mainId, id, title);
+		} else {
+			ArticleFactory.addCitedIn(mainId, id, title);
+		}
+	}
+
+	public static void jsonParser(String text, int mainId, boolean isCitedIn) {
+		JsonParser jp = new JsonParser();
+		JsonObject e = jp.parse(text).getAsJsonObject();
+		JsonArray elements = e.getAsJsonObject("result")
+				.getAsJsonObject("data").getAsJsonArray("citationItems");
+		int size = elements.size();
+		int min = Constant.crawlInDegree;
+		if(isCitedIn)
+			min = Constant.crawlOutDegree;
+		min = Math.min(size, min);
+		for (int i = 0; i < size; i++) {
+			try {
+				JsonObject el = elements.get(i).getAsJsonObject();
+				el = el.getAsJsonObject("data");
+				int id = el.get("publicationUid").getAsInt();
+				String url = el.get("publicationUrl").getAsString();				
+				String title = el.get("title").getAsString();
+				addCitation(mainId, id, isCitedIn, title);
+				if(i < min)
+					Scheduler.createWork(url, Headers.HTML_HEADER, id, mainId,
+							isCitedIn);
+			} catch (Exception e2) {
+				continue;
+			}
+		}
+	}
+}

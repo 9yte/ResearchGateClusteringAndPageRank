@@ -1,0 +1,66 @@
+package crawler;
+
+import info.ArticleFactory;
+import httpConnection.Downloader;
+import parser.Parser;
+import dictionary.Headers;
+
+public class Work implements Runnable {
+	private String url;
+	private int id;
+	private Headers header;
+	private int mainId;
+	private boolean isCitedIn;
+
+	public Work(String url, Headers header, int id, int mainId,
+			boolean isCitedIn) {
+		this.id = id;
+		this.url = url;
+		this.header = header;
+		this.mainId = mainId;
+		this.isCitedIn = isCitedIn;
+	}
+
+	@Override
+	public void run() {
+		try {
+			if(header == Headers.HTML_HEADER && !ArticleFactory.needForNewArticle()){				
+				return;
+			}
+			String content = null;
+			do {
+				content = Downloader.downloadUrl(url, header);				
+			} while (content == null);
+			
+			if (header == Headers.HTML_HEADER)
+				Parser.htmlParser(content, url, id, mainId, isCitedIn);
+			else
+				Parser.jsonParser(content, mainId, isCitedIn);
+		} 
+	}
+
+	protected Work clone() {
+		return new Work(url, header, id, mainId, isCitedIn);
+	}
+
+	@Override
+	public String toString() {
+		String p = "----------work----------\n";
+		if (header == Headers.HTML_HEADER) {
+			p = p + "load html page \n";
+			p = p + url + "\n";
+			if (isCitedIn)
+				p = p + mainId + " is cited in " + id;
+			else
+				p = p + id + " is a reference in " + mainId;
+		} else {
+			p = p + "load json citations file \n";
+			p = p + url + "\n";
+			if (isCitedIn) {
+				p = p + "load citations of " + id;
+			} else
+				p = p + "load references of " + id;
+		}
+		return p;
+	}
+}

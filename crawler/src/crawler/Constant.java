@@ -6,7 +6,9 @@ public class Constant {
 
 	static String initialArticlesFileUrl = "initialArticles";
 
-	public static int crawlDegree = 10;
+	public static int poolThreadSize = 30;
+	public static int crawlInDegree = 10;
+	public static int crawlOutDegree = 10;
 	static String domain = "https://www.researchgate.net/";
 	static private String citedInUrl = "https://www.researchgate.net/publicliterature.PublicationIncomingCitationsList.html?publicationUid=PUBLICATION_UID&showCitationsSorter=true&showAbstract=false&showType=true&showPublicationPreview=true&swapJournalAndAuthorPositions=false&limit=10000&offset=0";
 	static private String referencesUrl = "https://www.researchgate.net/publicliterature.PublicationCitationsList.html?publicationUid=PUBLICATION_UID&showCitationsSorter=true&showAbstract=false&showType=true&showPublicationPreview=true&swapJournalAndAuthorPositions=false&limit=100000&offset=0";

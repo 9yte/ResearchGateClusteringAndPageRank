@@ -23,7 +23,6 @@ public class SaveResultsIntoJson {
 	
 	public void saveArticles() {
 		String baseUrl = createDirectory();
-		System.out.println(baseUrl);
 		HashMap<Integer, Article> articles = ArticleFactory.getArticles();
 		for (HashMap.Entry<Integer, Article> article : articles.entrySet()) {
 			saveOneArticle(article.getValue(), baseUrl);

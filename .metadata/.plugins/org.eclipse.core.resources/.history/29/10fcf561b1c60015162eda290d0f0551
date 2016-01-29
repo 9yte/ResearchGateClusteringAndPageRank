@@ -1,0 +1,62 @@
+package crawler;
+
+import info.ArticleFactory;
+
+import java.util.HashSet;
+import java.util.concurrent.Semaphore;
+
+import dictionary.Headers;
+import file.ReadFromFile;
+
+public class Scheduler {
+	private static ThreadPool works;
+	private static HashSet<Integer> publicationsId;
+
+	public Scheduler() {
+		works = new ThreadPool();
+		publicationsId = new HashSet<Integer>();
+	}
+
+	public void start() {
+		works.start();
+		try {
+			addFirstArticles();
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void createWork(String url, Headers h, int id, int mainId, boolean isCitedIn) throws InterruptedException {
+		if(!url.contains("http"))
+			url = Constant.expandQuery(url);
+		if (h == Headers.HTML_HEADER) {
+			if (!publicationsId.contains(id) && ArticleFactory.needForNewArticle()) {
+				publicationsId.add(id);
+				works.execute(new Work(url, h, id, mainId, isCitedIn));
+			}
+		} else
+			works.execute(new Work(url, h, id, mainId, isCitedIn));
+	}
+	
+	public static void reDoWork(Work w) throws InterruptedException {
+		if(!ArticleFactory.needForNewArticle())
+//			works.execute(w.clone());
+//		else
+			works.close();
+	}
+
+	private void addFirstArticles() throws NumberFormatException, InterruptedException {
+		ReadFromFile r = new ReadFromFile(Constant.initialArticlesFileUrl);
+		String[] articles = r.read().split("\n");
+		for (int i = 0; i < articles.length; i++) {
+			System.out.println(i);
+			if (articles[i].equals(""))
+				break;
+			String[] article = articles[i].split(" ");
+			createWork(article[1], Headers.HTML_HEADER, Integer
+					.parseInt(article[0]), Integer.parseInt(article[0]), true);
+		}
+	}
+}

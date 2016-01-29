@@ -1,0 +1,66 @@
+package progressBar;
+
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+
+public class ProgressBar {
+	private char sign = '#';
+	private int numOfCurrentWorks;
+	private int numOfMaxWorks;
+	private int scale = 20;
+	private int max = 0;
+	
+	public static void main(String[] args) throws InterruptedException {
+		ProgressBar p = new ProgressBar(1000);
+		for (int i = 0; i < 1000; i++) {
+			p.update(i, 0);
+			Thread.sleep(5);
+		}
+		
+		for (int i = 1000; i < 2000; i++) {
+			p.update(i, 2000 - i);
+			Thread.sleep(5);
+		}
+		p.finish();
+	}
+	
+	public ProgressBar(int numOfMaxWorks) {
+		this.numOfMaxWorks = numOfMaxWorks;
+	}
+	
+	public void update(int numOfWorks, int numOfCitations) {
+		if((int) Math.floor(Math.log10(numOfCitations)) > max)
+			max = (int) Math.floor(Math.log10(numOfCitations));
+		numOfCurrentWorks = numOfWorks;
+		if(numOfWorks <= numOfMaxWorks) {
+			int numOfChars = Math.floorDiv(numOfWorks, scale);
+			String s = createNumOfChars(numOfChars, sign);
+			double percentage = (numOfWorks * 100.0) / (numOfMaxWorks);
+			DecimalFormat df = new DecimalFormat("#.##");
+			df.setRoundingMode(RoundingMode.CEILING);
+			print("%" + df.format(percentage) + " " + s);
+		}
+		else if(numOfWorks == numOfMaxWorks + 1){
+			System.out.println();
+		}
+		else {
+			print("still downloading " + String.format("%03d", numOfCitations) + " citations");
+		}
+	}
+	
+	public void finish() {
+		System.err.println("\ndone.");
+	}
+	
+	private String createNumOfChars(int numOfChars, char sign) {
+		String s = "";
+		for (int i = 0; i < numOfChars; i++) {
+			s += sign;
+		}
+		return s;
+	}
+
+	private void print(String string) {
+		System.out.print("\r" + string);
+	}
+}
