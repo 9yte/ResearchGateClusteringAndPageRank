@@ -133,7 +133,7 @@ def kMeans(dictionaries, k):
 
     currentCentroids = copy.copy(initial_docs)
     previousCentroids = {}
-    # for z in range(1000)
+    # for z in range(10):
     # print(isConverge(currentCentroids, previousCentroids))
     while isConverge(currentCentroids, previousCentroids):
         print("hi")
