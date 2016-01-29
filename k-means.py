@@ -20,7 +20,32 @@ def isConverge(centroids1, centroids2):
             return False
     return True
 
+def distance(u, v):
+    temp_u_cluster = u['cluster#']
+    temp_v_cluster = v['cluster#']
 
+    u['cluster#'] = 0
+    v['cluster#'] = 0
+
+    mutual = u.keys() & v.keys()
+
+    s = 0
+    for key in mutual:
+        s += math.pow(float(u[key]) - float(v[key]), 2)
+
+    unmutual = (u.keys() | v.keys()) - (u.keys() & v.keys())
+
+    for key in unmutual:
+        if key in u:
+            s += math.pow(float(u[key]), 2)
+        else:
+            s += math.pow(float(v[key]), 2)
+
+    s = math.sqrt(s)
+    u['cluster#'] = temp_u_cluster
+    v['cluster#'] = temp_v_cluster
+
+    return s
 
 def normalizer(u):
     keys = u.keys()
@@ -32,12 +57,12 @@ def normalizer(u):
     sum2 = 0
 
     for val in vals:
-        sum2 += math.pow(val,2)
+        sum2 += math.pow(float(val), 2)
 
     sum2 = math.sqrt(sum2)
 
     for key in keys:
-        u[key] = float(u[key] / sum2)
+        u[key] = float(float(u[key]) / sum2)
 
     u['cluster#'] = temp_u_cluster
 
@@ -85,7 +110,7 @@ def psum(u, v):
     mutual = u.keys() & v.keys()
     s = {}
     for key in mutual:
-        s[key] = u[key] + v[key]
+        s[key] = float(u[key]) + float(v[key])
 
     unmutual = (u.keys() | v.keys()) - (u.keys() & v.keys())
 
@@ -133,9 +158,9 @@ def kMeans(dictionaries, k):
 
     currentCentroids = copy.copy(initial_docs)
     previousCentroids = {}
-    # for z in range(10):
+    for z in range(5):
     # print(isConverge(currentCentroids, previousCentroids))
-    while isConverge(currentCentroids, previousCentroids):
+    # while isConverge(currentCentroids, previousCentroids):
         print("hi")
         for j in range(len(dictionaries)):
             max_similarity = 0
@@ -186,9 +211,27 @@ def kMeans(dictionaries, k):
         # print(initial_docs)
         # print(dictionaries)
 
+    cost = 0
+    for centroid in currentCentroids:
+        for docs in dictionaries:
+            if docs['cluster#'] == centroid['cluster#']:
+                cost += distance(centroid, docs)
+    return cost
+
     # print(dictionaries)
-    print("last Centroids")
-    print(currentCentroids)
+    # print("last Centroids")
+    # print(currentCentroids)
+    # cluster_info = []
+    # for i in range(k):
+    #     cluster_info.append(0)
+    # for item in dictionaries:
+    #     cluster_info[item['cluster#']-1] += 1
+    #
+    # print("Clusters Information:")
+    # for i in range(len(cluster_info)):
+    #     print("# Nodes in Cluster "+str(i+1)+": "+str(cluster_info[i]))
+
+
 
 # dictionaries = []
 # dic1 = {
@@ -229,12 +272,21 @@ def kMeans(dictionaries, k):
 
 with open('dictionaries_object.object', 'rb') as data_file:
     dictionaries = pickle.load(data_file)
-    # dictionaries = data_file.read()
-    # dictionaries = json.loads(dictionaries)
-    # items = dictionaries.split("{")
-# print(dictionaries[len(dictionaries)-1])
-# for item in items
-# print(list[len(list)-2])
-res = kMeans(dictionaries, 2)
-# print(res)
-# print(psum(dic1, dic4))
+
+k = 2
+current_res = 900
+previous_res = 1000
+while abs(previous_res - current_res) > math.pow(10, -1):
+    previous_res = current_res
+    current_res = 900
+    for i in range(5):
+        temp = kMeans(dictionaries, k)
+        if temp < current_res:
+            current_res = temp
+    print("current k: "+str(k))
+    print("current cost: "+str(current_res))
+    k += 1
+
+# prepared run: k = 8
+# with cost of = 705.78770295
+print("Found K for K-means: "+str(k-1))

@@ -90,14 +90,23 @@ es = Elasticsearch([{u'host': u'127.0.0.1', u'port': 9200}])
 
 # es.indices.delete(index="researchgate-data")
 
-# re = es.get(index="researchgate-data", doc_type='paper', id=1)
-# print(re['_source'])
+x = input("Enter weight for the title: ")
+y = input("Enter weight for the authors: ")
+z = input("Enter weight for the abstract: ")
+w = input("Enter weight for the page rank: ")
+
+q = input("Enter your query for searching: ")
+
+
+# x = "2.5"
+# y = "0.3"
+# z = "1.5"
 
 res = es.search(index='researchgate-data', body={
     "query": {
         "multi_match": {
-            "query": 'second',
-            "fields": ["title^2.5", "names^0.3", "abs^1.5"]
+            "query": q,
+            "fields": ["title^"+x, "names^"+y, "abs^"+z]
         }
     }})
 
