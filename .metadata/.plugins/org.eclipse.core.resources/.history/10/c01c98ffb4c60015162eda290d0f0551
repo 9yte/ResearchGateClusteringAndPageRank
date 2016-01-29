@@ -2,7 +2,7 @@
 public class PageRank {
 	public static void main(String[] args) {
 		int size = 1015;
-		double alpha = 0.2;
+		double alpha = 0.1;
 		String baseUrl = "2016-01-28 00:44:27";
 		ImportArticles im = new ImportArticles(baseUrl, size);
 		TransitionMatrix tm = new TransitionMatrix(im.importAllArticles(), size, alpha);
